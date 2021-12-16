@@ -80,7 +80,7 @@ def convert_and_padding(message: str, block_size: int, is_character: bool=False)
 # Main program to test
 if __name__ == "__main__":
     count = 0
-    tries = 10
+    tries = 1
     for i in range(tries):
         private_key, public_key = generate_rsa_key()
         # print("Nilai p dan q\t\t:", p, ",", q)
@@ -91,7 +91,7 @@ if __name__ == "__main__":
         # Contoh Penggunaan: Noted untuk Jojo
         with open('../test/artikel.txt', 'r') as f:
             message = f.read()
-        # message = "Hai namaku Evelyne!\nAku sayang sama Michael Hans!"
+        message = "Hai namaku Evelyne!\nAku sayang sama Michael Hans!"
         print("Plaintext\t\t:")
         print(message)
 
