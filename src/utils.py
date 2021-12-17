@@ -53,7 +53,7 @@ def message_to_hex(message: str):
     i = 0
     for char in message:
         hex = str(format(ord(char), "02x"))
-        # print(char, hex, sep='-', end="\n")
+        # print(char, hex, ord(char), sep='-', end="\n")
         hex_message += hex
     return hex_message
 

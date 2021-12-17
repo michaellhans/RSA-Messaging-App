@@ -21,8 +21,8 @@ def block_to_text(m: List[int], block_size: int) -> str:
 
 
 # Encrypt the ciphertext with RSA Algorithm
-def rsa_encryption(message: str, private_key: Tuple[int, int]) -> str:
-    e, n = private_key
+def rsa_encryption(message: str, public_key: Tuple[int, int]) -> str:
+    e, n = public_key
     block_size = len(str(n))
     padding_message = convert_and_padding(message, block_size - 1, True)
 
@@ -36,8 +36,8 @@ def rsa_encryption(message: str, private_key: Tuple[int, int]) -> str:
 
 
 # Decrypt the ciphertext with RSA Algorithm
-def rsa_decryption(ciphertext: str, public_key: Tuple[int, int]) -> str:
-    d, n = public_key
+def rsa_decryption(ciphertext: str, private_key: Tuple[int, int]) -> str:
+    d, n = private_key
     block_size = len(str(n))
     padding_ciphertext = convert_and_padding(ciphertext, block_size)
 
@@ -46,7 +46,7 @@ def rsa_decryption(ciphertext: str, public_key: Tuple[int, int]) -> str:
     for block in c:
         mi = pow(block, d, n)
         m.append(mi)
-    print(format(int(block_to_text(m, block_size - 1)), '0x'))
+
     return hex_to_message(format(int(block_to_text(m, block_size - 1)), '0x'))
 
 
@@ -58,9 +58,9 @@ def generate_rsa_key():
     toi = (p - 1) * (q - 1)
     e = PrimeGenerator.random()
     d = pow(e, -1, toi)
-    private_key = [e, n]
-    public_key = [d, n]
-    return [private_key, public_key]
+    public_key = [e, n]
+    private_key = [d, n]
+    return [public_key, private_key]
 
 
 # Add padding to the message so its length divisible by block size
@@ -70,6 +70,7 @@ def convert_and_padding(message: str, block_size: int, is_character: bool=False)
         hex_message = message_to_hex(message)
     else:
         hex_message = message
+
     int_message = str(int(hex_message, 16))
     length = len(int_message)
     padding_length = block_size - (length % block_size)
@@ -82,11 +83,10 @@ if __name__ == "__main__":
     count = 0
     tries = 1
     for i in range(tries):
-        private_key, public_key = generate_rsa_key()
-        # print("Nilai p dan q\t\t:", p, ",", q)
-        # print("Nilai n dan toi\t\t:", n, ",", toi)
-        print("Private key (e, n)\t:", private_key[0], ",", private_key[1])
-        print("Public key (d, n)\t:", public_key[0], ",", public_key[1])
+        public_key, private_key = generate_rsa_key()
+
+        print("Public key (e, n)\t:", public_key[0], ",", public_key[1])
+        print("Private key (d, n)\t:", private_key[0], ",", private_key[1])
 
         # Contoh Penggunaan: Noted untuk Jojo
         with open('../test/artikel.txt', 'r') as f:
@@ -95,11 +95,11 @@ if __name__ == "__main__":
         print("Plaintext\t\t:")
         print(message)
 
-        ciphertext = rsa_encryption(message, private_key)
+        ciphertext = rsa_encryption(message, public_key)
         print("\nCiphertext\t\t:")
         print(ciphertext)
 
-        decrypted_ciphertext = rsa_decryption(ciphertext, public_key)
+        decrypted_ciphertext = rsa_decryption(ciphertext, private_key)
         print("\nDecrypted ciphertext\t:")
         print(decrypted_ciphertext)
 

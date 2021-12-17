@@ -8,6 +8,7 @@ class Message:
         self.timestamp = datetime.now()
         self.public_key = public_key
         self.signature = self.signing(message, signing_private_key)
+        print(message + self.signature)
         self.message = rsa_encryption(message + self.signature, self.public_key)
         print(self.message)
         self.sender = sender

@@ -6,11 +6,9 @@ import re
 from flask import Flask, request, jsonify
 from firebase_admin import credentials, firestore, initialize_app
 from Message import *
+from flask_cors import CORS
 
 # Initialize Flask app
-app = Flask(__name__)
-
-from flask_cors import CORS, cross_origin
 app = Flask(__name__)
 cors = CORS(app)
 app.config['CORS_HEADERS'] = 'Content-Type'
@@ -81,17 +79,20 @@ def create():
         receiver = request.get_json()['receiver']
         message = request.get_json()['message']
         public_key = user_ref.document(receiver).get().to_dict()['public_key']
+        print(public_key)
         public_key = list(map(int, public_key.split(',')))
 
         try:
             with open('private_key/' + sender + "-sign.pri", "r") as f:
                 signing_private_key = f.read()
+            print(signing_private_key)
             signing_private_key = list(map(int, signing_private_key.split(',')))
 
         except:
             signing_private_key = ""
 
         messageDict = Message(message, sender, receiver, public_key, signing_private_key)
+        print(messageDict.message)
         timestamp = str(messageDict.timestamp)
         message_ref.document(timestamp).set(messageDict.to_json())
         return jsonify({"success": True}), 200
@@ -112,10 +113,12 @@ def read():
     assert(receiver)
     f = open("private_key/"+ receiver + ".pri", "r")
     private_key = f.read()
+    print("Private key receiver: ", private_key)
     private_key = list(map(int, private_key.split(',')))
     all_messages = [doc.to_dict() for doc in message_ref.where(u'receiver', u'==', receiver).stream()]
     print(all_messages[0]['sender'])
     public_key_verifying = verified_user_ref.document(all_messages[0]['sender']).get().to_dict()['public_key']
+    print("Public key verifying: ", public_key_verifying)
     if (public_key_verifying != None):
         public_key_verifying = list(map(int, public_key_verifying.split(',')))
 
@@ -130,6 +133,20 @@ def read():
         message['verify'] = verify(text, signature, public_key_verifying)
     try:
 
+        return jsonify(all_messages), 200
+
+    except Exception as e:
+        return f"An Error Occured: {e}"
+
+@app.route('/raw-messages', methods=['GET'])
+def read_raw():
+    """
+        read_raw() : Fetches messages documents from Firestore collection as JSON.
+        param: receiver
+    """
+    try:
+        receiver = request.args.get('receiver')
+        all_messages = [doc.to_dict() for doc in message_ref.where(u'receiver', u'==', receiver).stream()]
         return jsonify(all_messages), 200
 
     except Exception as e:
